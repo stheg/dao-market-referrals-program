@@ -37,7 +37,7 @@ contract ACDMPlatform is ReferralProgram {
         _roundStartDate = uint64(block.timestamp);
     }
 
-    function changeRound() external {
+    function finishRound() external {
         require(!_changing);
         require(_roundFinished());
 

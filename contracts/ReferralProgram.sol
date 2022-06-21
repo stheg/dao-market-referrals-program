@@ -16,7 +16,8 @@ contract ReferralProgram {
     uint16 private _ref1PercentOnSale = 500; // 5%
     uint16 private _ref2PercentOnSale = 300; // 3%
     uint16 private _ref1PercentOnTrade = 250; // 2.5%
-    uint16 private _ref2PercentOnTrade = 250; // 2.5% 
+    uint16 private _ref2PercentOnTrade = 250; // 2.5%
+    uint128 private _platformBonusAccumulated; 
     mapping(address => User) private _accounts;
 
     function register(address referral) external {
@@ -32,19 +33,25 @@ contract ReferralProgram {
         uint totalSpentEther, 
         bool tradeRound
     ) internal {
-        address ref1 = _accounts[buyer].referral;
-        if (ref1 == address(0)) return;
-
         uint percent1 = tradeRound ? _ref1PercentOnTrade : _ref1PercentOnSale;
+        uint percent2 = tradeRound ? _ref2PercentOnTrade : _ref2PercentOnSale;
+        
         uint reward1 = totalSpentEther * percent1 / _100_PERCENT;
+        uint reward2 = totalSpentEther * percent2 / _100_PERCENT;
+
+        address ref1 = _accounts[buyer].referral;
+        if (ref1 == address(0)) {
+            _platformBonusAccumulated += uint128(reward1 + reward2);
+            return;
+        }
 
         payable(ref1).transfer(reward1);
 
         address ref2 = _accounts[ref1].referral;
-        if (ref2 == address(0)) return;
-
-        uint percent2 = tradeRound ? _ref2PercentOnTrade : _ref2PercentOnSale;
-        uint reward2 = totalSpentEther * percent2 / _100_PERCENT;
+        if (ref2 == address(0)) {
+            _platformBonusAccumulated += uint128(reward2);
+            return;
+        }
 
         payable(ref2).transfer(reward2);
     } 
