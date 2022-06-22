@@ -31,6 +31,9 @@ contract StakingPlatform is AccessControl {
     mapping(address => Stake) internal _stakes;
 
     constructor(address stakingToken, address rewardToken) {
+        _setRoleAdmin(DEFAULT_ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(CONFIGURATOR_ROLE, DEFAULT_ADMIN_ROLE);
+
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         _stakingToken = stakingToken;

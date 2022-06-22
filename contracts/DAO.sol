@@ -36,6 +36,7 @@ contract DAO is StakingPlatform {
         address voteToken,
         address rewardToken
     ) StakingPlatform(voteToken, rewardToken) {
+        _setRoleAdmin(CHAIRPERSON_ROLE, DEFAULT_ADMIN_ROLE);
         _grantRole(CHAIRPERSON_ROLE, chairperson);
     }
 
