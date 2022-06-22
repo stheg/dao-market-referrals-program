@@ -58,9 +58,8 @@ contract StakingPlatform is AccessControl {
         return _unstakeDelay;
     }
 
-    /// @notice Returns current state for the specifed `staker`
-    function getDetails(address staker) external view returns(Stake memory) {
-        return _stakes[staker];
+    function getDetails() external view returns(Stake memory) {
+        return _stakes[msg.sender];
     }
 
     /// @notice Returns address of the current staking token

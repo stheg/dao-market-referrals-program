@@ -11,7 +11,7 @@ task("deposit", "Transfers vote-tokens to the contract to use them in votings")
         //     user1 = await hre.ethers.getSigner(args.user);
 
         // const contract = 
-        //     await hre.ethers.getContractAt("MADAO", args.contract, user1);
+        //     await hre.ethers.getContractAt("DAO", args.contract, user1);
         
         // const voteToken = await hre.ethers.getContractAt(
         //     "IERC20", 
