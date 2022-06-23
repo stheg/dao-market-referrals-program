@@ -56,7 +56,7 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
                 _roundAmount
             );
         } else {
-            IERC20MintableBurnable(_acdmToken).burn(
+            IERC20MintableBurnable(_acdmToken).burnFrom(
                 address(this),
                 _roundAmount
             );

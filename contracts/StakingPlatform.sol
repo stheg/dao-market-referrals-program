@@ -13,11 +13,20 @@ contract StakingPlatform is AccessControl {
     }
 
     /// @notice Informs that reward rate is changed
-    event RewardRateChanged(uint8 indexed rewardPercentage, address indexed changedBy);
+    event RewardRateChanged(
+        uint8 indexed rewardPercentage,
+        address indexed changedBy
+    );
     /// @notice Informs that reward delay is changed
-    event RewardDelayChanged(uint32 indexed rewardDelay, address indexed changedBy);
+    event RewardDelayChanged(
+        uint32 indexed rewardDelay,
+        address indexed changedBy
+    );
     /// @notice Informs that unstake delay is changed
-    event UnstakeDelayChanged(uint32 indexed unstakeDelay, address indexed changedBy);
+    event UnstakeDelayChanged(
+        uint32 indexed unstakeDelay,
+        address indexed changedBy
+    );
 
     bytes32 public constant CONFIGURATOR_ROLE = keccak256("configurator");
 
@@ -41,34 +50,34 @@ contract StakingPlatform is AccessControl {
     }
 
     /// @notice Returns current Reward Percentage
-    function getRewardPercentage() external view returns(uint256) {
+    function getRewardPercentage() external view returns (uint256) {
         return _rewardPercentage;
     }
-    
+
     /// @notice Returns current Reward Delay.
     /// @notice Shows how long Claim cannot be called since last Stake.
     /// @notice Shows how long a period which will be rewarded afterthat
-    function getRewardDelay() external view returns(uint256) {
+    function getRewardDelay() external view returns (uint256) {
         return _rewardDelay;
     }
 
     /// @notice Returns current Unstake Delay.
     /// @notice Shows how long Unstake cannot be called since last Stake
-    function getUnstakeDelay() external view returns(uint256) {
+    function getUnstakeDelay() external view returns (uint256) {
         return _unstakeDelay;
     }
 
-    function getDetails() external view returns(Stake memory) {
+    function getDetails() external view returns (Stake memory) {
         return _stakes[msg.sender];
     }
 
     /// @notice Returns address of the current staking token
-    function getStakingToken() external view returns(address) {
+    function getStakingToken() external view returns (address) {
         return address(_stakingToken);
     }
 
     /// @notice Returns address of the current reward token
-    function getRewardToken() external view returns(address) {
+    function getRewardToken() external view returns (address) {
         return address(_rewardToken);
     }
 
@@ -84,29 +93,35 @@ contract StakingPlatform is AccessControl {
 
     /// @notice Allows to change Reward Delay.
     /// @notice Emits `RewardDelayChanged` event
-    function setRewardDelay(uint32 newRewardDelay) public onlyRole(CONFIGURATOR_ROLE) {
+    function setRewardDelay(uint32 newRewardDelay)
+        public
+        onlyRole(CONFIGURATOR_ROLE)
+    {
         _rewardDelay = newRewardDelay;
         emit RewardDelayChanged(newRewardDelay, msg.sender);
     }
 
     /// @notice Allows to change Unstake Delay.
     /// @notice Emits UnstakeDelayChanged` event
-    function setUnstakeDelay(uint32 newUnstakeDelay) public onlyRole(CONFIGURATOR_ROLE) {
+    function setUnstakeDelay(uint32 newUnstakeDelay)
+        public
+        onlyRole(CONFIGURATOR_ROLE)
+    {
         _unstakeDelay = newUnstakeDelay;
         emit UnstakeDelayChanged(newUnstakeDelay, msg.sender);
     }
 
     /// @notice Allows to change the reward token, if the platform is locked
-    function setRewardToken(address newRewardToken) 
-        public 
+    function setRewardToken(address newRewardToken)
+        public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         _rewardToken = newRewardToken;
     }
 
     /// @notice Allows to change the staking token, if the platform is locked
-    function setStakingToken(address newStakingToken) 
-        public 
+    function setStakingToken(address newStakingToken)
+        public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         _stakingToken = newStakingToken;
@@ -114,12 +129,12 @@ contract StakingPlatform is AccessControl {
 
     /// @notice Calculates reward based on currently staked amount, if possible
     /// @notice Updates the state: dates & amounts
-    /// @notice Transfers from the sender the specified amount of tokens, 
+    /// @notice Transfers from the sender the specified amount of tokens,
     /// which should be already approved by the sender
     function stake(uint128 amount) public virtual {
         Stake storage staking = _stakes[msg.sender];
         uint128 calculatedReward = _calculateCurrentReward(
-            staking.amount, 
+            staking.amount,
             _getRewardPeriodsNumber(staking.lastRewardDate)
         );
 
@@ -127,7 +142,7 @@ contract StakingPlatform is AccessControl {
         staking.lastStakeDate = uint64(block.timestamp);
         staking.reward += calculatedReward;
         staking.amount += amount;
-        
+
         IERC20(_stakingToken).transferFrom(msg.sender, address(this), amount);
     }
 
@@ -135,19 +150,24 @@ contract StakingPlatform is AccessControl {
         Stake storage staking = _stakes[msg.sender];
         require(
             staking.amount > 0 &&
-            block.timestamp > staking.lastStakeDate + _unstakeDelay,
+                block.timestamp > staking.lastStakeDate + _unstakeDelay,
             "Cannot unstake yet"
         );
         uint128 stakedAmount = staking.amount;
         staking.amount = 0;
 
         uint64 periods = _getRewardPeriodsNumber(staking.lastRewardDate);
-        uint128 calculatedReward = _calculateCurrentReward(stakedAmount, periods);
-        
+        uint128 calculatedReward = _calculateCurrentReward(
+            stakedAmount,
+            periods
+        );
+
         staking.reward += calculatedReward;
         staking.lastRewardDate =
-            staking.lastRewardDate + periods * _rewardDelay;
-        
+            staking.lastRewardDate +
+            periods *
+            _rewardDelay;
+
         IERC20(_stakingToken).transfer(msg.sender, stakedAmount);
     }
 
@@ -158,14 +178,16 @@ contract StakingPlatform is AccessControl {
         bool canBeClaimed = staking.lastRewardDate > 0 &&
             block.timestamp > staking.lastRewardDate + _rewardDelay;
         require(canBeClaimed || staking.reward > 0, "Nothing to claim yet");
-        
+
         uint128 totalReward = staking.reward;
         uint64 periods = _getRewardPeriodsNumber(staking.lastRewardDate);
 
         staking.reward = 0;
         staking.lastRewardDate =
-            staking.lastRewardDate + periods * _rewardDelay;
-        
+            staking.lastRewardDate +
+            periods *
+            _rewardDelay;
+
         totalReward += _calculateCurrentReward(staking.amount, periods);
         IERC20(_rewardToken).transfer(msg.sender, totalReward);
     }
@@ -184,7 +206,7 @@ contract StakingPlatform is AccessControl {
         uint128 stakedAmount,
         uint64 numberOfPeriods
     ) private view returns (uint128) {
-        uint128 periodPrice = stakedAmount * _rewardPercentage / 100;
+        uint128 periodPrice = (stakedAmount * _rewardPercentage) / 100;
         return numberOfPeriods * periodPrice;
     }
 }
