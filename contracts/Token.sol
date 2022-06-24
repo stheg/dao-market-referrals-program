@@ -28,7 +28,11 @@ contract Token is IERC20MintableBurnable, ERC20PresetMinterPauser {
         super.mint(to, amount);
     }
 
-    function burnFrom(address account, uint256 amount) public virtual override(IERC20MintableBurnable, ERC20Burnable) {
-        super.burnFrom(account, amount);
+    // function burnFrom(address account, uint256 amount) public virtual override(IERC20MintableBurnable, ERC20Burnable) {
+    //     super.burnFrom(account, amount);
+    // }
+
+    function burn(uint256 amount) public virtual override(IERC20MintableBurnable, ERC20Burnable) {
+        super.burn(amount);
     }
 }

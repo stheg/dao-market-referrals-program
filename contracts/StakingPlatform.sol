@@ -3,8 +3,9 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./Configurable.sol";
 
-contract StakingPlatform is AccessControl {
+contract StakingPlatform is Configurable {
     struct Stake {
         uint128 amount;
         uint128 reward;
@@ -28,8 +29,6 @@ contract StakingPlatform is AccessControl {
         address indexed changedBy
     );
 
-    bytes32 public constant CONFIGURATOR_ROLE = keccak256("configurator");
-
     //uint32 covers 136 years, it's more than enough for delays
     uint32 private _rewardDelay = 7 days;
     uint32 private _unstakeDelay = 20 minutes;
@@ -39,12 +38,7 @@ contract StakingPlatform is AccessControl {
 
     mapping(address => Stake) internal _stakes;
 
-    constructor(address stakingToken, address rewardToken) {
-        _setRoleAdmin(DEFAULT_ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
-        _setRoleAdmin(CONFIGURATOR_ROLE, DEFAULT_ADMIN_ROLE);
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
+    constructor(address stakingToken, address rewardToken) Configurable() {
         _stakingToken = stakingToken;
         _rewardToken = rewardToken;
     }

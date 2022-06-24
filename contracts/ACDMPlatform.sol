@@ -6,7 +6,7 @@ import "./DAO.sol";
 import "./interfaces/IERC20MintableBurnable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
+contract ACDMPlatform is DAO, ReferralProgram {
     struct Listing {
         uint128 amount;
         uint128 price;
@@ -17,6 +17,7 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
     error ItIsNotSaleRound();
     error ItIsNotTradeRound();
     error TooEarly();
+    error NoSuchListing(address seller, uint256 listingId);
 
     uint256 private _tradingVolume;
     uint128 private _roundPrice = 10000 gwei;
@@ -26,7 +27,7 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
     bool private _tradeRound;
     address private _acdmToken;
     mapping(address => mapping(uint256 => Listing)) private _listings;
-    mapping(address => uint256) private _counter;
+    mapping(address => uint256) private _listingCounter;
 
     constructor(
         address acdmToken,
@@ -38,6 +39,41 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
         _roundStartDate = uint64(block.timestamp);
     }
 
+    modifier onlyTradeRound() {
+        if (!_tradeRound || _roundFinished()) revert ItIsNotTradeRound();
+        _;
+    }
+
+    modifier listingExists(address seller, uint256 listingId) {
+        if (listingId >= _listingCounter[seller]) 
+            revert NoSuchListing(seller, listingId);
+        _;
+    }
+
+    function getSaleRoundPrice() external view returns (uint256) {
+        return _roundPrice;
+    }
+
+    function getSaleRoundAmount() external view returns (uint256) {
+        return _roundAmount;
+    }
+
+    function getRoundDuration() external view returns (uint256) {
+        return _roundDuration;
+    }
+
+    function getListingDetails(address seller, uint256 listingId)
+        external
+        view
+        returns (Listing memory)
+    {
+        return _listings[seller][listingId];
+    }
+
+    function getListingCounter(address seller) external view returns (uint256) {
+        return _listingCounter[seller];
+    }
+
     function setRoundDuration(uint24 durationInSeconds)
         external
         onlyRole(CONFIGURATOR_ROLE)
@@ -45,8 +81,9 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
         _roundDuration = durationInSeconds;
     }
 
-    function finishRound() external nonReentrant {
+    function finishRound() external {
         if (!_roundFinished()) revert TooEarly();
+        _roundStartDate = uint64(block.timestamp);
 
         if (_tradeRound) {
             _roundAmount = uint128(_tradingVolume / _roundPrice);
@@ -56,10 +93,7 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
                 _roundAmount
             );
         } else {
-            IERC20MintableBurnable(_acdmToken).burnFrom(
-                address(this),
-                _roundAmount
-            );
+            IERC20MintableBurnable(_acdmToken).burn(_roundAmount);
 
             _roundPrice = (_roundPrice * 103) / 100 + 4000 gwei;
             _tradingVolume = 0;
@@ -83,14 +117,13 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
         _applyReferralProgram(msg.sender, totalPrice, _tradeRound);
     }
 
-    function buy(
+    function buyListed(
         address seller,
-        uint64 id,
+        uint128 listingId,
         uint128 amount
-    ) external payable {
-        Listing storage item = _listings[seller][id];
+    ) external payable onlyTradeRound listingExists(seller, listingId) {
+        Listing storage item = _listings[seller][listingId];
         if (item.amount < amount) revert RequestedAmountExceedsListedAmount();
-        _checkIfTradeRound();
 
         uint256 totalPrice = item.price * amount;
         if (msg.value < totalPrice) revert NotEnoughEtherProvided();
@@ -99,34 +132,33 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
         _transferToken(address(this), msg.sender, amount);
 
         _tradingVolume += totalPrice;
-        payable(seller).transfer(totalPrice);
+        uint256 totalReward = _applyReferralProgram(
+            msg.sender,
+            totalPrice,
+            _tradeRound
+        );
+        payable(seller).transfer(totalPrice - totalReward);
 
         _refundIfPossible(totalPrice);
-
-        _applyReferralProgram(msg.sender, totalPrice, _tradeRound);
     }
 
-    function list(uint128 amount, uint128 price) external {
-        _checkIfTradeRound();
-
+    function list(uint128 amount, uint128 price) external onlyTradeRound {
         _transferToken(msg.sender, address(this), amount);
 
-        uint256 id = _counter[msg.sender]++;
-        _listings[msg.sender][id] = Listing(amount, price);
+        uint256 listingId = _listingCounter[msg.sender]++;
+        _listings[msg.sender][listingId] = Listing(amount, price);
     }
 
-    function unlist(uint256 id) external {
-        _checkIfTradeRound();
-
-        Listing storage item = _listings[msg.sender][id];
+    function unlist(uint256 listingId)
+        external
+        onlyTradeRound
+        listingExists(msg.sender, listingId)
+    {
+        Listing storage item = _listings[msg.sender][listingId];
         uint256 amount = item.amount;
         item.amount = 0;
 
         _transferToken(address(this), msg.sender, amount);
-    }
-
-    function _checkIfTradeRound() private {
-        if (!_tradeRound || _roundFinished()) revert ItIsNotTradeRound();
     }
 
     function _roundFinished() private view returns (bool) {
@@ -138,7 +170,8 @@ contract ACDMPlatform is ReentrancyGuard, ReferralProgram, DAO {
         address to,
         uint256 amount
     ) private {
-        IERC20(_acdmToken).transferFrom(from, to, amount);
+        if (from == address(this)) IERC20(_acdmToken).transfer(to, amount);
+        else IERC20(_acdmToken).transferFrom(from, to, amount);
     }
 
     function _refundIfPossible(uint256 totalPrice) private {

@@ -5,5 +5,5 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IERC20MintableBurnable is IERC20 {
     function mint(address to, uint amount) external;
-    function burnFrom(address from, uint amount) external;
+    function burn(uint amount) external;
 }
