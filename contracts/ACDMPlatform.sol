@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "./ReferralProgram.sol";
 import "./DAO.sol";
 import "./interfaces/IERC20MintableBurnable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract ACDMPlatform is DAO, ReferralProgram {
     struct Listing {
@@ -133,7 +132,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
 
         _tradingVolume += totalPrice;
         uint256 totalReward = _applyReferralProgram(
-            msg.sender,
+            seller,
             totalPrice,
             _tradeRound
         );

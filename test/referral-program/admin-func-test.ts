@@ -9,8 +9,8 @@ import { BigNumber } from "ethers";
 describe("admin functions", () => {
     let accounts: SignerWithAddress[];
     let owner: SignerWithAddress;
-    let erc20Owner: SignerWithAddress;
-    let staker: SignerWithAddress;
+    let user1: SignerWithAddress;
+    let user2: SignerWithAddress;
     let contract: ACDMPlatform;
     let stakingToken: IUniswapV2Pair;
     let rewardToken: IERC20MintableBurnable;
@@ -18,13 +18,13 @@ describe("admin functions", () => {
 
     beforeEach(async () => {
         accounts = await ethers.getSigners();
-        erc20Owner = accounts[0];
-        owner = accounts[1];
-        staker = accounts[2];
+        owner = accounts[0];
+        user1 = accounts[1];
+        user2 = accounts[2];
 
-        acdmToken = await testDeployERC20("ACDM", 8, erc20Owner);
+        acdmToken = await testDeployERC20("ACDM", 8, owner);
 
-        [stakingToken, rewardToken] = await provideLiquidityForTests(staker, erc20Owner);
+        [stakingToken, rewardToken] = await provideLiquidityForTests(user2, owner);
 
         contract = await deployACDMPlatform(
             acdmToken.address,
@@ -32,18 +32,42 @@ describe("admin functions", () => {
             rewardToken.address, 
             owner
         );
-        contract = contract.connect(staker);
+        await contract.connect(owner).grantRole(
+            await contract.CONFIGURATOR_ROLE(), 
+            owner.address
+        );
     });
 
     it("setReferralPercent reverts if no correct role", async () => {
-        const tx = contract.setReferralPercent(true, true, 1000);
+        const tx = contract.connect(user1).setReferralPercent(true, true, 1000);
         await expect(tx).to.be.reverted;
     });
 
-    it("setRewardDelay reverts if no correct role", async () => {
-        await contract.connect(owner).grantRole(await contract.CONFIGURATOR_ROLE(), owner.address);
+    it("setReferralPercent sets ref1 percent for sale round", async () => {
+        const expected = 105;
+        await contract.connect(owner).setReferralPercent(false, true, expected);
+        const actual = await contract.getReferralPercent(false, true);
+        expect(actual).eq(expected);
+    });
 
-        const tx = contract.connect(owner).setReferralPercent(true, true, 1000);
-        await expect(tx).to.not.be.reverted;
+    it("setReferralPercent sets ref2 percent for sale round", async () => {
+        const expected = 105;
+        await contract.connect(owner).setReferralPercent(false, false, expected);
+        const actual = await contract.getReferralPercent(false, false);
+        expect(actual).eq(expected);
+    });
+
+    it("setReferralPercent sets ref1 percent for trade round", async () => {
+        const expected = 105;
+        await contract.connect(owner).setReferralPercent(true, true, expected);
+        const actual = await contract.getReferralPercent(true, true);
+        expect(actual).eq(expected);
+    });
+
+    it("setReferralPercent sets ref2 percent for trade round", async () => {
+        const expected = 105;
+        await contract.connect(owner).setReferralPercent(true, false, expected);
+        const actual = await contract.getReferralPercent(true, false);
+        expect(actual).eq(expected);
     });
 });

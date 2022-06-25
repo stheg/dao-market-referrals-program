@@ -7,7 +7,7 @@ import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
 import { delay } from "../../scripts/misc";
 
-describe("list in sale round", () => {
+describe("list in trade round", () => {
     let accounts: SignerWithAddress[];
     let owner: SignerWithAddress;
     let user1: SignerWithAddress;

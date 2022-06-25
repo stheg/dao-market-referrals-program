@@ -21,6 +21,10 @@ contract ReferralProgram is Configurable {
     uint192 private _platformBonusAccumulated;
     mapping(address => User) private _accounts;
 
+    function getAccountInfo() external view returns(User memory) {
+        return _accounts[msg.sender];
+    }
+
     function getReferralPercent(
         bool trading,
         bool ref1
