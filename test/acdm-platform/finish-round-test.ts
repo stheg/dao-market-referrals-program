@@ -4,7 +4,6 @@ import { ethers } from "hardhat";
 import { ACDMPlatform, ERC20PresetMinterPauser, IERC20MintableBurnable, IUniswapV2Pair, ReferralProgram, StakingPlatform, Token } from "../../typechain-types";
 import { testDeployERC20, deployACDMPlatform } from "../../scripts/test-deployment";
 import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
-import { BigNumber } from "ethers";
 import { delay } from "../../scripts/misc";
 
 describe("finish round", () => {
@@ -41,7 +40,8 @@ describe("finish round", () => {
         await contract.setReferralPercent(true, true, 0);
 
         await acdmToken.grantRole(await acdmToken.MINTER_ROLE(), contract.address);
-        await acdmToken.mint(contract.address, 100000);
+        const defaultAmount = 100000 * (await acdmToken.decimals());
+        await acdmToken.mint(contract.address, defaultAmount);
     });
 
     it("finishRound reverts if not trade round", async () => {

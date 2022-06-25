@@ -80,7 +80,8 @@ describe("list in sale round", () => {
 
         await acdmToken.connect(user1).approve(contract.address, amount);
         await contract.connect(user1).list(amount, price);
-        const listing = await contract.getListingDetails(user1.address, 0);
+        const listingCounter = await contract.getListingCounter(user1.address);
+        const listing = await contract.getListingDetails(user1.address, listingCounter.sub(1));
         expect(listing.amount).eq(amount);
         expect(listing.price).eq(price);
     });
