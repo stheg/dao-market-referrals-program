@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { IERC20MintableBurnable, IUniswapV2Pair, StakingPlatform } from "../../typechain-types";
-import { testDeployERC20, deployStakingPlatform } from "../../scripts/test-deployment";
+import { deployERC20Token, deployStakingPlatform } from "../../scripts/test-deployment";
 import { getFactory, getRouter, provideLiquidityETH, provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
 

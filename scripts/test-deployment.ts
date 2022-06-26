@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { ACDMPlatform, IERC20MintableBurnable, StakingPlatform, Token } from "../typechain-types";
 
-export async function testDeployERC20(name: string, dec:number, owner: SignerWithAddress)
+export async function deployERC20Token(name: string, dec:number, owner: SignerWithAddress)
     : Promise<Token> {
     const contractFactory =
         await ethers.getContractFactory("Token", owner);

@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { IERC20, IERC20MintableBurnable, IUniswapV2Factory, IUniswapV2Pair, IUniswapV2Router02 } from "../typechain-types";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
-import { testDeployERC20 } from "./test-deployment";
+import { deployERC20Token } from "./test-deployment";
 
 export async function getFactory(
     signer:SignerWithAddress, 
@@ -101,7 +101,7 @@ export async function provideLiquidityETH(
 export async function provideLiquidityForTests(staker: SignerWithAddress, rewardTokenOwner: SignerWithAddress): Promise<[IUniswapV2Pair, IERC20MintableBurnable]> {
     const liquidityAmount = BigNumber.from("10000");
 
-    const rewardToken = await testDeployERC20("SToken", 18, rewardTokenOwner);
+    const rewardToken = await deployERC20Token("SToken", 18, rewardTokenOwner);
     await rewardToken.mint(staker.address, liquidityAmount);
 
     const stakingToken = await provideLiquidityETH(

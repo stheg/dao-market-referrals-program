@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair, ReferralProgram, StakingPlatform } from "../../typechain-types";
-import { testDeployERC20, deployACDMPlatform } from "../../scripts/test-deployment";
+import { deployERC20Token, deployACDMPlatform } from "../../scripts/test-deployment";
 import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
 import { delay } from "../../scripts/misc";
@@ -23,7 +23,7 @@ describe("buyListed in trade round", () => {
         user1 = accounts[1];
         user2 = accounts[2];
 
-        acdmToken = await testDeployERC20("ACDM", 8, owner);
+        acdmToken = await deployERC20Token("ACDM", 8, owner);
 
         [stakingToken, rewardToken] = await provideLiquidityForTests(user2, owner);
 

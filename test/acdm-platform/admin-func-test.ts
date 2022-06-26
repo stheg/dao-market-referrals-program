@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair, ReferralProgram, StakingPlatform } from "../../typechain-types";
-import { testDeployERC20, deployACDMPlatform } from "../../scripts/test-deployment";
+import { deployERC20Token, deployACDMPlatform } from "../../scripts/test-deployment";
 import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
 
@@ -22,7 +22,7 @@ describe("admin functions", () => {
         owner = accounts[1];
         staker = accounts[2];
 
-        acdmToken = await testDeployERC20("ACDM", 8, erc20Owner);
+        acdmToken = await deployERC20Token("ACDM", 8, erc20Owner);
 
         [stakingToken, rewardToken] = await provideLiquidityForTests(staker, erc20Owner);
 
@@ -33,6 +33,7 @@ describe("admin functions", () => {
             owner
         );
         contract = contract.connect(staker);
+        await contract.getACDMToken();
     });
 
     it("setRoundDuration reverts if no correct role", async () => {

@@ -49,6 +49,10 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _;
     }
 
+    function getACDMToken() external view returns (address) {
+        return _acdmToken;
+    }
+
     function getSaleRoundPrice() external view returns (uint256) {
         return _roundPrice;
     }

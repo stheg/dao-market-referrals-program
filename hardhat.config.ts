@@ -9,7 +9,7 @@ import "solidity-coverage";
 import "tsconfig-paths/register";
 
 import "./tasks/default";
-import "./tasks/tasks";
+import "./tasks/acdm-platform";
 
 
 export default {
