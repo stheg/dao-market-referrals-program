@@ -18,11 +18,15 @@ contract ReferralProgram is Configurable {
     uint16 private _ref2PercentOnSale = 300; // 3%
     uint16 private _ref1PercentOnTrade = 250; // 2.5%
     uint16 private _ref2PercentOnTrade = 250; // 2.5%
-    uint192 private _platformBonusAccumulated;
+    uint192 internal _platformBonusAccumulated;
     mapping(address => User) private _accounts;
 
     function getAccountInfo() external view returns(User memory) {
         return _accounts[msg.sender];
+    }
+
+    function getAccumulatedPlatformBonus() external view returns(uint256) {
+        return _platformBonusAccumulated;
     }
 
     function getReferralPercent(

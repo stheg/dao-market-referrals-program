@@ -30,6 +30,7 @@ async function main() {
     );
     await contract.deployed();
     await contract.grantRole(await contract.CONFIGURATOR_ROLE(), contract.address);
+    await acdmToken.mint(contract.address, await contract.getSaleRoundAmount());
 
     console.log("ACDM Token deployed to: " + acdmToken.address);
     console.log("Reward Token deployed to: " + rewardToken.address);

@@ -24,7 +24,7 @@ describe("claim", () => {
         staker = accounts[2];
 
         [stakingToken, rewardToken] =
-            await provideLiquidityForTests(staker, rewardTokenOwner);
+            await provideLiquidityForTests(staker, rewardTokenOwner, "10000");
 
         availableLpTokenBalance = await stakingToken.balanceOf(staker.address);
 

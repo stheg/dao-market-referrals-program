@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "./ReferralProgram.sol";
 import "./DAO.sol";
 import "./interfaces/IERC20MintableBurnable.sol";
+import "./interfaces/IUniswapV2Router.sol";
 
 contract ACDMPlatform is DAO, ReferralProgram {
     struct Listing {
@@ -17,6 +18,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
     error ItIsNotTradeRound();
     error TooEarly();
     error NoSuchListing(address seller, uint256 listingId);
+    error NothingToWithdraw();
 
     uint256 private _tradingVolume;
     uint128 private _roundPrice = 10000 gwei;
@@ -44,7 +46,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
     }
 
     modifier listingExists(address seller, uint256 listingId) {
-        if (listingId >= _listingCounter[seller]) 
+        if (listingId >= _listingCounter[seller])
             revert NoSuchListing(seller, listingId);
         _;
     }
@@ -162,6 +164,36 @@ contract ACDMPlatform is DAO, ReferralProgram {
         item.amount = 0;
 
         _transferToken(address(this), msg.sender, amount);
+    }
+
+    function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (address(this).balance <= _platformBonusAccumulated)
+            revert NothingToWithdraw();
+        uint256 toWithdraw = address(this).balance - _platformBonusAccumulated;
+
+        payable(msg.sender).transfer(toWithdraw);
+    }
+
+    function convertAndBurn(
+        address uniswapRouterAddr,
+        address tokenAddr,
+        uint32 deadlineOffset
+    ) external onlyRole(CONFIGURATOR_ROLE) {
+        IUniswapV2Router02 router = IUniswapV2Router02(uniswapRouterAddr);
+        address[] memory path = new address[](2);
+        path[0] = router.WETH();
+        path[1] = tokenAddr;
+
+        uint256[] memory amounts = router.getAmountsOut(
+            _platformBonusAccumulated,
+            path
+        );
+
+        uint256[] memory res = router.swapExactETHForTokens{
+            value: _platformBonusAccumulated
+        }(amounts[1], path, address(this), block.timestamp + deadlineOffset);
+
+        IERC20MintableBurnable(tokenAddr).burn(res[1]);
     }
 
     function _roundFinished() private view returns (bool) {

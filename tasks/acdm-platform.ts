@@ -40,7 +40,7 @@ task("finish-round", "Finishes current round (sale or trade)")
 
 task("buy", "Buy ACDM tokens in sale round")
     .addParam("contract", "Address of the contract")
-    .addParam("amount", "Amount of tokens to be deposited")
+    .addParam("amount", "Amount of tokens to buy")
     .addOptionalParam("user", "User address")
     .setAction(async (args, hre) => {
         let [owner, user1, user2] = await hre.ethers.getSigners();

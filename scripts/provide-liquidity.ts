@@ -98,8 +98,8 @@ export async function provideLiquidityETH(
     return lpToken;
 }
 
-export async function provideLiquidityForTests(staker: SignerWithAddress, rewardTokenOwner: SignerWithAddress): Promise<[IUniswapV2Pair, IERC20MintableBurnable]> {
-    const liquidityAmount = BigNumber.from("10000");
+export async function provideLiquidityForTests(staker: SignerWithAddress, rewardTokenOwner: SignerWithAddress, amount: string = "1000000", price: string = "0.00001"): Promise<[IUniswapV2Pair, IERC20MintableBurnable]> {
+    const liquidityAmount = BigNumber.from(amount);
 
     const rewardToken = await deployERC20Token("SToken", 18, rewardTokenOwner);
     await rewardToken.mint(staker.address, liquidityAmount);
@@ -108,7 +108,7 @@ export async function provideLiquidityForTests(staker: SignerWithAddress, reward
         staker,
         rewardToken,
         BigNumber.from(liquidityAmount),
-        ethers.utils.parseEther("0.00001").mul(liquidityAmount),
+        ethers.utils.parseEther(price).mul(liquidityAmount),
         await getFactory(staker),
         await getRouter(staker)
     );
