@@ -69,26 +69,31 @@ export async function provideLiquidityETH(
     tokenAmount: BigNumber,
     ethAmount: BigNumber,
     uniFactory: IUniswapV2Factory,
-    uniRouter: IUniswapV2Router02
+    uniRouter: IUniswapV2Router02,
+    deadlineDate:number | null = null
 ): Promise<IUniswapV2Pair> {
-    const blockNumBefore = await ethers.provider.getBlockNumber();
-    const blockBefore = await ethers.provider.getBlock(blockNumBefore);
-    const deadline = blockBefore.timestamp + 180;
+    if (deadlineDate == null) {
+        const blockNumBefore = await ethers.provider.getBlockNumber();
+        const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+        deadlineDate = blockBefore.timestamp + 60;
+    }
 
     await token.connect(liqProvider).approve(uniRouter.address, tokenAmount);
+
+    const wETH = await uniRouter.WETH();
+    let lpTokenAddr = await uniFactory.getPair(wETH, token.address);
 
     await uniRouter.addLiquidityETH(
         token.address,
         tokenAmount,
-        tokenAmount,
+        tokenAmount.sub(tokenAmount.div(100)), // - 1%
         ethAmount,
         liqProvider.address,
-        deadline
-    ,{value:ethAmount});
+        deadlineDate,
+        {value:ethAmount}
+    );
 
-    const wethTokenAddr = await uniRouter.WETH();
-
-    let lpTokenAddr = await uniFactory.getPair(token.address, wethTokenAddr);
+    lpTokenAddr = await uniFactory.getPair(wETH, token.address);
     const lpToken = await ethers.getContractAt(
         "IUniswapV2Pair",
         lpTokenAddr,

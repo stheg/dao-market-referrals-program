@@ -97,8 +97,7 @@ task("provide-liquidity-eth", "Add tokens to a pool and get LP tokens back")
     .addOptionalParam("router", "address of IUniswapV2Router")
     .setAction(async (args, hre): Promise<IUniswapV2Pair> => {
         let provider = await hre.ethers.getSigner(args.provider);
-        const accounts = await hre.ethers.getSigners();
-
+        
         const tokenA = await hre.ethers.getContractAt(
             "IERC20MintableBurnable",
             args.tokena,
@@ -108,8 +107,6 @@ task("provide-liquidity-eth", "Add tokens to a pool and get LP tokens back")
         const amountA = args.amounta ?
             hre.ethers.BigNumber.from(args.amounta) :
             await tokenA.balanceOf(provider.address);
-        await tokenA.connect(accounts[1])
-            .mint(provider.address, amountA.mul(2));
         
         const factory = await hre.ethers.getContractAt(
             "IUniswapV2Factory",
@@ -129,20 +126,30 @@ task("provide-liquidity-eth", "Add tokens to a pool and get LP tokens back")
 
         await tokenA.connect(provider).approve(router.address, amountA);
         
-        let wETH = "0x";
-        let lpTokenAddr = await factory.getPair(tokenA.address, wETH);
+        let wETH = await router.WETH();
+        let lpTokenAddr = await factory.getPair(wETH, tokenA.address);
+        // if (lpTokenAddr != hre.ethers.constants.AddressZero) {
+        //     const lpToken = await hre.ethers.getContractAt(
+        //         "IUniswapV2Pair",
+        //         lpTokenAddr,
+        //         provider
+        //     ) as IUniswapV2Pair;
 
+        //     console.log("LP token address: " + lpToken.address);
+        //     return lpToken;
+        // }
+        const ETH = hre.ethers.utils.parseEther(args.amounteth);
         await router.addLiquidityETH(
             tokenA.address,
             amountA,
             amountA,
-            args.amounteth,
+            ETH,
             provider.address,
             deadline,
-            {value:args.amounteth}
+            {value:ETH}
         );
 
-        lpTokenAddr = await factory.getPair(tokenA.address, wETH);
+        lpTokenAddr = await factory.getPair(wETH, tokenA.address);
         const lpToken = await hre.ethers.getContractAt(
             "IUniswapV2Pair",
             lpTokenAddr,
