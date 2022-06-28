@@ -1,5 +1,4 @@
 import { task } from "hardhat/config";
-import { IERC20, IERC20MintableBurnable, StakingPlatform } from "../typechain-types";
 
 task("stake", "Allows to stake some amount of tokens")
     .addParam("contract", "address of the staking platform")
@@ -14,14 +13,14 @@ task("stake", "Allows to stake some amount of tokens")
             "ACDMPlatform",
             args.contract,
             staker
-        ) as StakingPlatform;
+        );
 
         const erc20Addr = await stakingPlatform.getStakingToken();
         const stakingToken = await hre.ethers.getContractAt(
             "IERC20",
             erc20Addr,
             staker
-        ) as IERC20;
+        );
         
         let amount = args.value ? hre.ethers.BigNumber.from(args.value) 
             : await stakingToken.balanceOf(staker.address);
@@ -42,7 +41,7 @@ task("unstake", "Allows to unstake some amount of tokens")
             "ACDMPlatform",
             args.contract,
             staker
-        ) as StakingPlatform;
+        );
 
         await stakingPlatform.unstake();
     });
@@ -59,14 +58,14 @@ task("claim", "Allows to withdraw available reward tokens")
             "ACDMPlatform",
             args.contract,
             staker
-        ) as StakingPlatform;
+        );
 
         const erc20Addr = await stakingPlatform.getRewardToken();
         const rewardToken = await hre.ethers.getContractAt(
             "IERC20MintableBurnable",
             erc20Addr,
             staker
-        ) as IERC20MintableBurnable;
+        );
 
         if (hre.network.name == "hardhat") {
             // just for test
@@ -94,7 +93,7 @@ task("get-details", "Returns the details")
             "ACDMPlatform",
             args.contract,
             staker
-        ) as StakingPlatform;
+        );
 
         const [a, r, ud, rd] = await stakingPlatform.connect(staker).getDetails();
         console.log("Amount: " + a);

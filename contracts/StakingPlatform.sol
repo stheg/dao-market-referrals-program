@@ -38,7 +38,9 @@ contract StakingPlatform is Configurable {
 
     mapping(address => Stake) internal _stakes;
 
-    constructor(address stakingToken, address rewardToken) Configurable() {
+    bytes32 private _whitelistMRoot;
+
+    constructor(address stakingToken, address rewardToken) {
         _stakingToken = stakingToken;
         _rewardToken = rewardToken;
     }
@@ -105,7 +107,7 @@ contract StakingPlatform is Configurable {
         emit UnstakeDelayChanged(newUnstakeDelay, msg.sender);
     }
 
-    /// @notice Allows to change the reward token, if the platform is locked
+    /// @notice Allows to change the reward token
     function setRewardToken(address newRewardToken)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -113,7 +115,7 @@ contract StakingPlatform is Configurable {
         _rewardToken = newRewardToken;
     }
 
-    /// @notice Allows to change the staking token, if the platform is locked
+    /// @notice Allows to change the staking token
     function setStakingToken(address newStakingToken)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -125,7 +127,10 @@ contract StakingPlatform is Configurable {
     /// @notice Updates the state: dates & amounts
     /// @notice Transfers from the sender the specified amount of tokens,
     /// which should be already approved by the sender
-    function stake(uint128 amount) public virtual {
+    function stake(uint128 amount)
+        public
+        virtual
+    {
         Stake storage staking = _stakes[msg.sender];
         uint128 calculatedReward = _calculateCurrentReward(
             staking.amount,

@@ -12,7 +12,7 @@ import "./tasks/default";
 import "./tasks/acdm-platform";
 import "./tasks/dao";
 import "./tasks/staking";
-import "./tasks/provide-liquidity";
+// import "./tasks/provide-liquidity";
 
 export default {
   solidity: {

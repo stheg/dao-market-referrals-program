@@ -1,5 +1,4 @@
 import { task } from "hardhat/config";
-import { IERC20MintableBurnable } from "../typechain-types";
 
 task("register", "Register in ACDM Platform")
     .addParam("contract", "Address of the contract")
@@ -75,7 +74,7 @@ task("list", "List ACDM tokens to trade with other users")
             "IERC20",
             acdmTokenAddr,
             user1
-        ) as IERC20MintableBurnable;
+        );
 
         if (args.approve)
             await acdmToken.approve(contract.address, args.amount);
