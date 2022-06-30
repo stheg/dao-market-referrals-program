@@ -51,6 +51,22 @@ describe("list in trade round", () => {
         await expect(tx).to.be.revertedWith("ItIsNotTradeRound");
     });
 
+    it("list emits Listed event", async () => {
+        const amount = 100;
+        const price = await contract.getSaleRoundPrice();
+        const totalPrice = price.mul(amount);
+
+        await contract.connect(user1).buy(amount, { value: totalPrice });
+        await delay(await contract.getRoundDuration(), 30);
+        await contract.finishRound();
+        await delay(BigNumber.from(30), 30);
+
+        await acdmToken.connect(user1).approve(contract.address, amount);
+        const tx = contract.connect(user1).list(amount, price);
+        await expect(tx).to.emit(contract, "Listed")
+            .withArgs(user1.address, 0, price, amount);
+    });
+
     it("list changes token balances", async () => {
         const amount = 100;
         const price = await contract.getSaleRoundPrice();

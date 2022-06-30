@@ -20,6 +20,20 @@ contract ACDMPlatform is DAO, ReferralProgram {
     error NoSuchListing(address seller, uint256 listingId);
     error NothingToWithdraw();
 
+    event Listed(
+        address indexed seller,
+        uint256 indexed listingId,
+        uint128 price,
+        uint128 amount
+    );
+    event Unlisted(address indexed seller, uint256 indexed listingId);
+    event RoundFinished(
+        bool indexed tradeRound,
+        uint256 indexed finishDate,
+        uint128 newSalePrice,
+        uint128 nextSaleAmount
+    );
+
     uint256 private _tradingVolume;
     uint128 private _roundPrice = 10000 gwei;
     uint128 private _roundAmount = 100000;
@@ -104,6 +118,13 @@ contract ACDMPlatform is DAO, ReferralProgram {
             _tradingVolume = 0;
         }
 
+        emit RoundFinished(
+            _tradeRound,
+            _roundStartDate,
+            _roundPrice,
+            _roundAmount
+        );
+
         _tradeRound = !_tradeRound;
     }
 
@@ -152,6 +173,8 @@ contract ACDMPlatform is DAO, ReferralProgram {
 
         uint256 listingId = _listingCounter[msg.sender]++;
         _listings[msg.sender][listingId] = Listing(amount, price);
+
+        emit Listed(msg.sender, listingId, price, amount);
     }
 
     function unlist(uint256 listingId)
@@ -164,6 +187,8 @@ contract ACDMPlatform is DAO, ReferralProgram {
         item.amount = 0;
 
         _transferToken(address(this), msg.sender, amount);
+
+        emit Unlisted(msg.sender, listingId);
     }
 
     function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {

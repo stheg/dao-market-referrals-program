@@ -65,12 +65,29 @@ describe("unlist in trade round", () => {
         await expect(tx).to.be.revertedWith("NoSuchListing");
     });
 
+    it("unlist emits Unlisted event", async () => {
+        const amount = 100;
+        const price = await contract.getSaleRoundPrice();
+        const totalPrice = price.mul(amount);
+
+        await contract.connect(user1).buy(amount, { value: totalPrice });
+        await delay(await contract.getRoundDuration(), 30);
+        await contract.finishRound();
+        await delay(BigNumber.from(30), 30);
+
+        await acdmToken.connect(user1).approve(contract.address, amount);
+        await contract.connect(user1).list(amount, price);
+        const tx = contract.connect(user1).unlist(0);
+        await expect(tx).to.emit(contract, "Unlisted")
+            .withArgs(user1.address, 0);
+    });
+
     it("unlist changes token balances", async () => {
         const amount = 100;
         const price = await contract.getSaleRoundPrice();
         const totalPrice = price.mul(amount);
-        
-        await contract.connect(user1).buy(amount, { value: totalPrice });        
+
+        await contract.connect(user1).buy(amount, { value: totalPrice });
         await delay(await contract.getRoundDuration(), 30);
         await contract.finishRound();
         await delay(BigNumber.from(30), 30);
