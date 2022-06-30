@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { ACDMPlatform, ERC20PresetMinterPauser, IERC20MintableBurnable, IUniswapV2Pair, ReferralProgram, StakingPlatform, Token } from "../../typechain-types";
+import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair, Token } from "../../typechain-types";
 import { deployERC20Token, deployACDMPlatform } from "../../scripts/test-deployment";
 import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { delay } from "../../scripts/misc";

@@ -1,11 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair, ReferralProgram, StakingPlatform } from "../../typechain-types";
+import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair } from "../../typechain-types";
 import { deployERC20Token, deployACDMPlatform } from "../../scripts/test-deployment";
 import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
-import { delay } from "../../scripts/misc";
 
 describe("unlist in sale round", () => {
     let accounts: SignerWithAddress[];

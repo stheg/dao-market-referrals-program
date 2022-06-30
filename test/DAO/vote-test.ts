@@ -9,7 +9,6 @@ import { BigNumber } from "ethers";
 describe("MA DAO", () => {
     let chairperson: SignerWithAddress;
     let user1: SignerWithAddress;
-    let user2: SignerWithAddress;
     let contract: DAO;
     let voteToken: MockContract;
     let callData: string;
@@ -18,7 +17,7 @@ describe("MA DAO", () => {
     const duration = BigNumber.from(7 * 24 * 60 * 60);
 
     beforeEach(async () => {
-        [chairperson, user1, user2] = await ethers.getSigners();
+        [chairperson, user1] = await ethers.getSigners();
         voteToken = await deployMockContract(chairperson, IERC20__factory.abi);
         await voteToken.mock.transferFrom.returns(true);
         

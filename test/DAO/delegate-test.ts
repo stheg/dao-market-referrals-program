@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { deployMockContract, MockContract } from "@ethereum-waffle/mock-contract";
 import { ethers } from "hardhat";
 import { DAO, IERC20__factory } from "../../typechain-types";
-import { BigNumber } from "ethers";
 
 describe("MA DAO", () => {
     let chairperson: SignerWithAddress;

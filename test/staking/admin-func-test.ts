@@ -2,9 +2,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { IERC20MintableBurnable, IUniswapV2Pair, StakingPlatform } from "../../typechain-types";
-import { deployERC20Token, deployStakingPlatform } from "../../scripts/test-deployment";
-import { getFactory, getRouter, provideLiquidityETH, provideLiquidityForTests } from "../../scripts/provide-liquidity";
-import { BigNumber } from "ethers";
+import { deployStakingPlatform } from "../../scripts/test-deployment";
+import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
 
 describe("lock-unlock functions", () => {
     let accounts: SignerWithAddress[];
