@@ -49,6 +49,15 @@ describe("MA DAO", () => {
             expect(p.status).eq(3);//cancelled
         });
 
+        it("should emit event ProposalFinished when cancelled", async () => {
+            await delay(duration, 60);
+
+            const tx = contract.connect(user1).finish(proposalId);
+
+            await expect(tx).to.emit(contract, "ProposalFinished")
+                .withArgs(proposalId, 3);// 3 = cancelled
+        });
+
         it("should be rejected", async () => {
             await contract.connect(user1).stake(1000);
             await contract.connect(user1).vote(proposalId, false);
@@ -61,6 +70,18 @@ describe("MA DAO", () => {
             expect(p.status).eq(2);
         });
 
+        it("should emit ProposalFinished event when rejected", async () => {
+            await contract.connect(user1).stake(1000);
+            await contract.connect(user1).vote(proposalId, false);
+
+            await delay(duration, 60);
+
+            const tx = contract.connect(user1).finish(proposalId);
+
+            await expect(tx).to.emit(contract, "ProposalFinished")
+                .withArgs(proposalId, 2);// 2 = rejected
+        });
+
         it("should be finished", async () => {
             await contract.connect(user1).stake(1000);
             await contract.connect(user1).vote(proposalId, true);
@@ -71,6 +92,18 @@ describe("MA DAO", () => {
 
             const p = await contract.getProposal(proposalId);
             expect(p.status).eq(1);
+        });
+
+        it("should emit ProposalFinished event when finished", async () => {
+            await contract.connect(user1).stake(1000);
+            await contract.connect(user1).vote(proposalId, true);
+
+            await delay(duration, 60);
+
+            const tx = contract.connect(user1).finish(proposalId);
+
+            await expect(tx).to.emit(contract, "ProposalFinished")
+                .withArgs(proposalId, 1);// 1 = finished
         });
 
         it("should be rejected if callData reverts", async () => {

@@ -21,6 +21,9 @@ contract DAO is StakingPlatform {
         string description;
     }
 
+    event ProposalAdded(address indexed addedBy, uint256 indexed id);
+    event ProposalFinished(uint256 indexed id, uint8 indexed status);
+
     bytes32 public constant CHAIRPERSON_ROLE = keccak256("chairperson");
 
     uint64 private _minimumQuorum = 1000;
@@ -76,11 +79,14 @@ contract DAO is StakingPlatform {
         bytes memory funcSignature,
         string memory description
     ) external onlyRole(CHAIRPERSON_ROLE) {
-        Proposal storage p = _proposals[_proposalCounter++];
+        uint256 pId = _proposalCounter++;
+        Proposal storage p = _proposals[pId];
         p.funcSignature = funcSignature;
         p.description = description;
         p.recipient = recipient;
         p.startDate = uint64(block.timestamp);
+
+        emit ProposalAdded(msg.sender, pId);
     }
 
     function vote(uint32 pId, bool agree)
@@ -100,8 +106,7 @@ contract DAO is StakingPlatform {
         // it's enough to keep the last voting.
         // all votings before will finish before the last one.
         uint256 latestVotingId = _latestVoting[msg.sender];
-        if (pId > latestVotingId) 
-            _latestVoting[msg.sender] = pId; //this is needed for unstake
+        if (pId > latestVotingId) _latestVoting[msg.sender] = pId; //this is needed for unstake
 
         if (agree) p.votesFor += availableAmount;
         else p.votesAgainst += availableAmount;
@@ -123,6 +128,8 @@ contract DAO is StakingPlatform {
                 : Status.Rejected;
         }
         p.status = uint8(resultStatus);
+        
+        emit ProposalFinished(pId, p.status);
         if (resultStatus != Status.Finished) return;
 
         (bool success, ) = p.recipient.call(p.funcSignature);
@@ -143,7 +150,8 @@ contract DAO is StakingPlatform {
         view
         returns (uint256)
     {
-        uint256 availableAmount = _stakes[voter].amount + _allowance[voter][pId];
+        uint256 availableAmount = _stakes[voter].amount +
+            _allowance[voter][pId];
         require(availableAmount > 0, "DAO: no deposit");
         return availableAmount;
     }

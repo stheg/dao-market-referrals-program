@@ -43,6 +43,19 @@ describe("DAO", () => {
             expect(p.description).eq(description);
         });
 
+        it("should emit ProposalAdded event", async () => {
+            const description = "transfer 1000 vote tokens to chairperson";
+
+            const tx = contract.addProposal(
+                voteToken.address,
+                callData,
+                description
+            );
+
+            await expect(tx).to.emit(contract, "ProposalAdded")
+                .withArgs(chairperson.address, 1);
+        });
+
         it("should be reverted", async () => {
             const tx = contract.connect(user1).addProposal(
                 voteToken.address,
