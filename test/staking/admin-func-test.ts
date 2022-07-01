@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { IERC20MintableBurnable, IUniswapV2Pair, StakingPlatform } from "../../typechain-types";
 import { deployStakingPlatform } from "../../scripts/test-deployment";
-import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
+import { deployTokenAndProvideLiquidityForTests } from "../../scripts/provide-liquidity";
 
 describe("lock-unlock functions", () => {
     let accounts: SignerWithAddress[];
@@ -21,7 +21,7 @@ describe("lock-unlock functions", () => {
         staker = accounts[2];
 
         [stakingToken, rewardToken] =
-            await provideLiquidityForTests(staker, rewardTokenOwner);
+            await deployTokenAndProvideLiquidityForTests(staker, rewardTokenOwner);
 
         contract = await deployStakingPlatform(
             stakingToken.address, 

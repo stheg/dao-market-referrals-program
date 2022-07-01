@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { ACDMPlatform, IERC20MintableBurnable, IUniswapV2Pair } from "../../typechain-types";
 import { deployERC20Token, deployACDMPlatform } from "../../scripts/test-deployment";
-import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
+import { deployTokenAndProvideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { BigNumber } from "ethers";
 import { delay } from "../../scripts/misc";
 
@@ -25,7 +25,7 @@ describe("admin functions", () => {
 
         acdmToken = await deployERC20Token("ACDM", 8, owner);
 
-        [stakingToken, rewardToken] = await provideLiquidityForTests(user2, owner);
+        [stakingToken, rewardToken] = await deployTokenAndProvideLiquidityForTests(user2, owner);
 
         contract = await deployACDMPlatform(
             acdmToken.address,

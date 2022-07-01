@@ -216,18 +216,22 @@ contract ACDMPlatform is DAO, ReferralProgram {
         address tokenAddr,
         uint32 deadlineOffset
     ) external onlyRole(CONFIGURATOR_ROLE) {
+        uint256 toBeSpent = _platformBonusAccumulated;
+        require(toBeSpent > 0, "No ETH to convert and burn");
+        _platformBonusAccumulated = 0;
+
         IUniswapV2Router02 router = IUniswapV2Router02(uniswapRouterAddr);
         address[] memory path = new address[](2);
         path[0] = router.WETH();
         path[1] = tokenAddr;
 
         uint256[] memory amounts = router.getAmountsOut(
-            _platformBonusAccumulated,
+            toBeSpent,
             path
         );
 
         uint256[] memory res = router.swapExactETHForTokens{
-            value: _platformBonusAccumulated
+            value: toBeSpent
         }(amounts[1], path, address(this), block.timestamp + deadlineOffset);
 
         IERC20MintableBurnable(tokenAddr).burn(res[1]);

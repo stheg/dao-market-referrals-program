@@ -37,8 +37,6 @@ contract StakingPlatform is Configurable {
 
     mapping(address => Stake) internal _stakes;
 
-    bytes32 private _whitelistMRoot;
-
     constructor(address stakingToken, address rewardToken) {
         _stakingToken = stakingToken;
         _rewardToken = rewardToken;

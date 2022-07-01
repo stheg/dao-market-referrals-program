@@ -54,6 +54,10 @@ contract DAO is StakingPlatform {
         _;
     }
 
+    function getVotingDuration() external view returns (uint24) {
+        return _votingPeriodDuration;
+    }
+
     function getProposal(uint256 id) external view returns (Proposal memory) {
         return _proposals[id];
     }

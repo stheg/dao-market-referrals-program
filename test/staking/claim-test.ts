@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 import { delay, toDate } from "../../scripts/misc";
 import { IERC20MintableBurnable, IUniswapV2Pair, StakingPlatform } from "../../typechain-types";
 import { deployStakingPlatform } from "../../scripts/test-deployment";
-import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
+import { deployTokenAndProvideLiquidityForTests } from "../../scripts/provide-liquidity";
 
 describe("claim", () => {
     let accounts: SignerWithAddress[];
@@ -24,7 +24,7 @@ describe("claim", () => {
         staker = accounts[2];
 
         [stakingToken, rewardToken] =
-            await provideLiquidityForTests(staker, rewardTokenOwner, "10000");
+            await deployTokenAndProvideLiquidityForTests(staker, rewardTokenOwner, "10000");
 
         availableLpTokenBalance = await stakingToken.balanceOf(staker.address);
 

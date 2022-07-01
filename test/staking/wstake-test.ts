@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { IERC20MintableBurnable, IUniswapV2Pair, WStakingPlatform } from "../../typechain-types";
-import { provideLiquidityForTests } from "../../scripts/provide-liquidity";
+import { deployTokenAndProvideLiquidityForTests } from "../../scripts/provide-liquidity";
 import { keccak256 } from "ethers/lib/utils";
 import { MerkleTree } from "../../node_modules/merkletreejs/dist"
 
@@ -22,7 +22,7 @@ describe("whitelist", () => {
         user2 = accounts[2];
 
         [stakingToken, rewardToken] =
-            await provideLiquidityForTests(user2, owner);
+            await deployTokenAndProvideLiquidityForTests(user2, owner);
 
         const contractFactory =
             await ethers.getContractFactory("WStakingPlatform", owner);

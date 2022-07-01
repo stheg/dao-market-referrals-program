@@ -8,6 +8,7 @@ import "./Whitelist.sol";
 contract WStakingPlatform is Whitelist, StakingPlatform {
     error ExternalCallRestricted(string message);
 
+    bytes32 private _whitelistMRoot;
     mapping(address => bool) private _internalCall;
 
     constructor(address stakingToken, address rewardToken)
