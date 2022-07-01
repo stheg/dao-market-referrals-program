@@ -5,8 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "./interfaces/IERC20MintableBurnable.sol";
 
 contract Token is IERC20MintableBurnable, ERC20PresetMinterPauser {
-
-    uint8 _decimalNum;
+    uint8 private _decimalNum;
 
     constructor(
         string memory name,
@@ -28,7 +27,11 @@ contract Token is IERC20MintableBurnable, ERC20PresetMinterPauser {
         super.mint(to, amount);
     }
 
-    function burn(uint256 amount) public virtual override(IERC20MintableBurnable, ERC20Burnable) {
+    function burn(uint256 amount)
+        public
+        virtual
+        override(IERC20MintableBurnable, ERC20Burnable)
+    {
         super.burn(amount);
     }
 }

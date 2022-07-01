@@ -54,6 +54,16 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _roundStartDate = uint64(block.timestamp);
     }
 
+    modifier enoughBalanceFor(uint128 amount) {
+        if (_roundAmount < amount) revert RequestedAmountExceedsListedAmount();
+        _;
+    }
+
+    modifier onlySaleRound() {
+        if (_tradeRound || _roundFinished()) revert ItIsNotSaleRound();
+        _;
+    }
+
     modifier onlyTradeRound() {
         if (!_tradeRound || _roundFinished()) revert ItIsNotTradeRound();
         _;
@@ -128,10 +138,12 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _tradeRound = !_tradeRound;
     }
 
-    function buy(uint128 amount) external payable {
-        if (_roundAmount < amount) revert RequestedAmountExceedsListedAmount();
-        if (_tradeRound || _roundFinished()) revert ItIsNotSaleRound();
-
+    function buy(uint128 amount)
+        external
+        payable
+        enoughBalanceFor(amount)
+        onlySaleRound
+    {
         uint256 totalPrice = amount * _roundPrice;
         if (msg.value < totalPrice) revert NotEnoughEtherProvided();
 

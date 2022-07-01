@@ -126,10 +126,7 @@ contract StakingPlatform is Configurable {
     /// @notice Updates the state: dates & amounts
     /// @notice Transfers from the sender the specified amount of tokens,
     /// which should be already approved by the sender
-    function stake(uint128 amount)
-        public
-        virtual
-    {
+    function stake(uint128 amount) public virtual {
         Stake storage staking = _stakes[msg.sender];
         uint128 calculatedReward = _calculateCurrentReward(
             staking.amount,

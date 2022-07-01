@@ -128,7 +128,7 @@ contract DAO is StakingPlatform {
                 : Status.Rejected;
         }
         p.status = uint8(resultStatus);
-        
+
         emit ProposalFinished(pId, p.status);
         if (resultStatus != Status.Finished) return;
 

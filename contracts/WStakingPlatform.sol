@@ -21,7 +21,7 @@ contract WStakingPlatform is Whitelist, StakingPlatform {
         _;
     }
 
-    /// @notice Stake based on whitelist 
+    /// @notice Stake based on whitelist
     function wstake(uint128 amount, bytes32[] memory proof)
         public
         virtual

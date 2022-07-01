@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./Configurable.sol";
 
 contract Whitelist is Configurable {
-
     bytes32 private _whitelistMRoot;
 
     modifier senderFromWhitelist(bytes32[] memory proof) {

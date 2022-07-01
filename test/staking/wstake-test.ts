@@ -79,7 +79,7 @@ describe("whitelist", () => {
 
         const wrongUserHash = keccak256(owner.address);
         const wrongProof = merkleTree.getHexProof(wrongUserHash);
-        console.log(wrongProof);
+        // console.log(wrongProof);
         const tx = contract.connect(owner).wstake(100, wrongProof);
         await expect(tx).to.be.revertedWith("Whitelist: no access");
     });
@@ -102,7 +102,7 @@ describe("whitelist", () => {
 
         const userHash = keccak256(user2.address);
         const userProof = merkleTree.getHexProof(userHash);
-        console.log(userProof);
+        // console.log(userProof);
 
         const amount = 10;
         await stakingToken.approve(contract.address, amount);
