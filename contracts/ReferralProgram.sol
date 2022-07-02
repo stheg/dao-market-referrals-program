@@ -44,6 +44,7 @@ contract ReferralProgram is Configurable {
         return percent;
     }
 
+    /// @notice Can be called only by CONFIGURATOR, this allows to call it via DAO
     function setReferralPercent(
         bool trading,
         bool ref1,
@@ -58,6 +59,7 @@ contract ReferralProgram is Configurable {
         }
     }
 
+    /// @notice Allows to register and specify referral to get bonuses
     function register(address referral) external {
         if (_accounts[msg.sender].regDate > 0) revert RegisteredAlready();
         if (referral != address(0) && _accounts[referral].regDate == 0)

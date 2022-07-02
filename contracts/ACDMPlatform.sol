@@ -6,6 +6,10 @@ import "./DAO.sol";
 import "./interfaces/IERC20MintableBurnable.sol";
 import "./interfaces/IUniswapV2Router.sol";
 
+/// @notice Allows to buy ACDM tokens from platform on sale rounds.
+/// @notice Allows to list, unlist and buy listed ACDM tokens on trade round.
+/// @notice Allows to register and specify a referral to get bonuses.
+/// @notice There are stake and DAO functionality to change settings.
 contract ACDMPlatform is DAO, ReferralProgram {
     struct Listing {
         uint128 amount;
@@ -75,22 +79,27 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _;
     }
 
+    /// @notice Returns address of ACDM Token
     function getACDMToken() external view returns (address) {
         return _acdmToken;
     }
 
+    /// @notice Returns price for sale round 
     function getSaleRoundPrice() external view returns (uint256) {
         return _roundPrice;
     }
 
+    /// @notice Returns amount of ACDM tokens left on sale round
     function getSaleRoundAmount() external view returns (uint256) {
         return _roundAmount;
     }
 
+    /// @notice Returns current duration of rounds
     function getRoundDuration() external view returns (uint256) {
         return _roundDuration;
     }
 
+    /// @notice Returns information of the seller's listing
     function getListingDetails(address seller, uint256 listingId)
         external
         view
@@ -99,10 +108,13 @@ contract ACDMPlatform is DAO, ReferralProgram {
         return _listings[seller][listingId];
     }
 
+    /// @notice Returns number of listings created by user in total
     function getListingCounter(address seller) external view returns (uint256) {
         return _listingCounter[seller];
     }
 
+    /// @notice Allows to set new duration for rounds (sale and trade)
+    /// @notice Can be called only by CONFIGURATOR, this allows to call it via DAO
     function setRoundDuration(uint24 durationInSeconds)
         external
         onlyRole(CONFIGURATOR_ROLE)
@@ -110,6 +122,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _roundDuration = durationInSeconds;
     }
 
+    /// @notice Finishes current round if it is ended 
     function finishRound() external {
         if (!_roundFinished()) revert TooEarly();
         _roundStartDate = uint64(block.timestamp);
@@ -138,6 +151,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _tradeRound = !_tradeRound;
     }
 
+    /// @notice Allows to buy ACDM tokens from platform on sale rounds
     function buy(uint128 amount)
         external
         payable
@@ -155,6 +169,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _applyReferralProgram(msg.sender, totalPrice, _tradeRound);
     }
 
+    /// @notice Allows to buy ACDM tokens from users on trade rounds
     function buyListed(
         address seller,
         uint128 listingId,
@@ -180,6 +195,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         _refundIfPossible(totalPrice);
     }
 
+    /// @notice Allows to sell ACDM tokens to other users on trade rounds
     function list(uint128 amount, uint128 price) external onlyTradeRound {
         _transferToken(msg.sender, address(this), amount);
 
@@ -189,6 +205,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         emit Listed(msg.sender, listingId, price, amount);
     }
 
+    /// @notice Cancels a listing on trade rounds
     function unlist(uint256 listingId)
         external
         onlyTradeRound
@@ -203,6 +220,7 @@ contract ACDMPlatform is DAO, ReferralProgram {
         emit Unlisted(msg.sender, listingId);
     }
 
+    /// @notice Admin can withraw amounts which platform gets on sale rounds 
     function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (address(this).balance <= _platformBonusAccumulated)
             revert NothingToWithdraw();
@@ -211,6 +229,8 @@ contract ACDMPlatform is DAO, ReferralProgram {
         payable(msg.sender).transfer(toWithdraw);
     }
 
+    /// @notice Special function to support the price of the reward token.
+    /// @notice Can be called only by CONFIGURATOR, this allows to call it via DAO
     function convertAndBurn(
         address uniswapRouterAddr,
         address tokenAddr,

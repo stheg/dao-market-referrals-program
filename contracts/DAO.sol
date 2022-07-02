@@ -54,14 +54,17 @@ contract DAO is StakingPlatform {
         _;
     }
 
+    /// @notice Returns duration of votings
     function getVotingDuration() external view returns (uint24) {
         return _votingPeriodDuration;
     }
 
+    /// @notice Get details of the proposal by id
     function getProposal(uint256 id) external view returns (Proposal memory) {
         return _proposals[id];
     }
 
+    /// @notice Allows to return staked token if conditions are met.
     function unstake() public virtual override {
         uint256 amount = _stakes[msg.sender].amount;
         require(amount > 0, "DAO: nothing to unstake");
@@ -78,6 +81,8 @@ contract DAO is StakingPlatform {
         super.unstake();
     }
 
+    /// @notice CHAIRPERSON can add a new proposal
+    /// @notice Emits event ProposalAdded
     function addProposal(
         address recipient,
         bytes memory funcSignature,
@@ -93,6 +98,7 @@ contract DAO is StakingPlatform {
         emit ProposalAdded(msg.sender, pId);
     }
 
+    /// @notice Users with deposit (staked tokens) can vote for or against a proposal 
     function vote(uint32 pId, bool agree)
         external
         proposalExists(pId)
@@ -116,6 +122,7 @@ contract DAO is StakingPlatform {
         else p.votesAgainst += availableAmount;
     }
 
+    /// @notice Allows to finish a voting if conditions are met.
     function finish(uint256 pId) external proposalExists(pId) {
         Proposal storage p = _proposals[pId];
         require( //now > finishDate
@@ -140,6 +147,7 @@ contract DAO is StakingPlatform {
         require(success, "DAO: recipient call error");
     }
 
+    /// @notice Specified user will vote instead of caller. 
     function delegate(address aDelegate, uint256 pId)
         external
         proposalExists(pId)
